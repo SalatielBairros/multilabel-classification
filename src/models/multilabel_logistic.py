@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import hamming_loss
 import joblib
 from ingestion.stack_questions_ingestor import StackOverflowQuestionsIngestor
 from os import path
@@ -94,4 +95,13 @@ class MultilabelLogisticRegression:
 
         model = self.__get_model__()
         model.fit(x_train_tfidf, y_train)
-        return model.score(x_test_tfidf, y_test)
+        predictions = model.predict(x_test_tfidf)
+
+        dummy_score = 1 / len(self.train_data[self.labels_column].unique())
+        exact_match_accuracy = model.score(x_test_tfidf, y_test)
+        hamming_loss_score = hamming_loss(y_test, predictions)
+        return {
+            'exact_match_accuracy': exact_match_accuracy,
+            'dummy_score': dummy_score,
+            'hamming_loss': hamming_loss_score,
+        }
