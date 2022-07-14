@@ -11,4 +11,8 @@ ingestor.ingest()
 df = execute_feature_engineering()
 
 model = MultilabelLogisticRegression(train_data=df)
-model.load_model().predict("I don't know how to use angular with jquery")
+predictions = model.load_model().predict("I don't know how to use angular with jquery")
+print(predictions)
+
+score = model.evaluate_model()
+print(score)

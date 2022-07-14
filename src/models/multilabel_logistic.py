@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 import joblib
 from ingestion.stack_questions_ingestor import StackOverflowQuestionsIngestor
 from os import path
+import logging
+from data_processing.data_processing_executor import execute_feature_engineering
 
 class MultilabelLogisticRegression:
     def __init__(self, train_data: pd.DataFrame = None, text_column: str = 'Perguntas', labels_column: str = 'all_tags', labels_names: list[str] = None):
@@ -24,6 +26,7 @@ class MultilabelLogisticRegression:
     def __load_data__(self) -> pd.DataFrame:
         ingestor = StackOverflowQuestionsIngestor()
         ingestor.ingest()        
+        execute_feature_engineering()
 
     def __get_vectorizer__(self) -> TfidfVectorizer:
         vet = TfidfVectorizer(max_features=5000, max_df=0.85)
@@ -35,8 +38,17 @@ class MultilabelLogisticRegression:
         model = OneVsRestClassifier(lr)
         return model
 
-    def __get_labels__(self, label_column) -> list[list[int]]:
-        return [list(eval(y)) for y in label_column]
+    def __get_labels__(self, label_data) -> list[list[int]]:
+        if(len(label_data) == 0):
+            raise Exception('Empty label column')
+
+        first = label_data.iloc[0]
+        if(type(first) is tuple):
+            return [list(y) for y in label_data]
+        elif(type(first) is str):
+            return [list(eval(y)) for y in label_data]
+
+        raise Exception('Invalid label column')
 
     def __train__(self) -> OneVsRestClassifier:
         labels = self.__get_labels__(self.train_data[self.labels_column])
@@ -53,7 +65,9 @@ class MultilabelLogisticRegression:
     def load_model(self):
         if(path.exists(self.model_file_path)):
             self.model = joblib.load(self.model_file_path)
+            logging.info('Using model from file')
         else:
+            logging.info('Training model')
             self.__train__()
             self.__save_model__()
         return self
@@ -65,7 +79,7 @@ class MultilabelLogisticRegression:
         vectorizer = self.__get_vectorizer__()
         vector = vectorizer.transform([text])
         predictions = self.model.predict(vector)
-        return {self.labels_names[i]: predictions[i] for i in range(len(self.labels_names))}
+        return [{self.labels_names[i]: prediction[i] for i in range(len(self.labels_names))} for prediction in predictions]
 
     def evaluate_model(self):
         x_train, x_test, y_train, y_test = train_test_split(
@@ -75,8 +89,8 @@ class MultilabelLogisticRegression:
         x_train_tfidf = vectorizer.transform(x_train)
         x_test_tfidf = vectorizer.transform(x_test)
 
-        y_train = [list(eval(y)) for y in y_train]
-        y_test = [list(eval(y)) for y in y_test]
+        y_train = self.__get_labels__(y_train)
+        y_test = self.__get_labels__(y_test)
 
         model = self.__get_model__()
         model.fit(x_train_tfidf, y_train)
