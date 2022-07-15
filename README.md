@@ -18,7 +18,11 @@ The data-source can be obtained [here](https://raw.githubusercontent.com/alura-c
     pip install numpy 
     pip install fastapi
     pip install requests
+    pip install sklearn
+    pip install joblib
+    pip install pydantic
     pip install "uvicorn[standard]"
+    pip install scikit-multilearn
     ```
 
 ## Running de Code
