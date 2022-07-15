@@ -8,22 +8,17 @@ The data-source can be obtained [here](https://raw.githubusercontent.com/alura-c
 
 ## Dependencies
 
-- [pandas](https://pandas.pydata.org/)
-- [numpy](https://numpy.org/)
-- [requests](https://requests.readthedocs.io/)
-- [fastAPI](https://fastapi.tiangolo.com/)
-
-    ```bash
-    pip install pandas 
-    pip install numpy 
-    pip install fastapi
-    pip install requests
-    pip install sklearn
-    pip install joblib
-    pip install pydantic
-    pip install "uvicorn[standard]"
-    pip install scikit-multilearn
-    ```
+```    
+pip install pandas 
+pip install numpy 
+pip install fastapi
+pip install requests
+pip install sklearn
+pip install joblib
+pip install pydantic
+pip install "uvicorn[standard]"
+pip install scikit-multilearn
+```
 
 ## Running de Code
 
@@ -31,7 +26,7 @@ There is two ways to run the code: (1) running the recommendations on the consol
 
 (1)
 ```bash
-python main.py
+python console_main.py
 ```
 
 (2)
@@ -42,3 +37,18 @@ uvicorn main:app --reload
 > The `reload` option is used to reload the code when it changes and should be used only when developing.
 
 For te API, the Documentation can be found at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+## Controllers and endpoints
+
+All controllers have two endpoints:
+1. `/predict`: used to predict the labels of a question.
+2. `/evaluation`: used to evaluate the model.
+
+### logistic
+Classification using Binary Relevante (`OneVsRestClassifier`) with Logistic Regression.
+
+### mlknn
+Classification using the Multilabel K-Nearest Neighbors (`MLKNN`). This algorithm is from the [scikit-multilearn](https://scikit-multilearn.readthedocs.io/en/latest/index.html) library, but because the last release is out of date with the last version of scikit-learn, the code from scikit-multilearn repository is copied here.
+
+### classifier-chain
+Classification using the Classifier Chain (`ClassifierChain`) with Logistic Regression.
